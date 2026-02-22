@@ -1,0 +1,12 @@
+version: "v0.1.0"
+objective: "Automate routine PM workflows while preserving human control for high-risk decisions."
+default_output_template: "result_v1"
+low_confidence_threshold: 0.70
+max_parallel_tasks: 3
+required_sections:
+  - conclusion
+  - evidence
+  - risks
+  - next_actions
+  - confidence
+  - need_human_decision

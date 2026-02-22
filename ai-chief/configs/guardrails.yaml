@@ -1,0 +1,17 @@
+redlines:
+  - "External commitment without approval"
+  - "Budget decision or spend approval"
+  - "Cross-team public messaging"
+  - "Policy or compliance-sensitive statement"
+must_escalate_if:
+  contains_external_commitment: true
+  contains_budget_impact: true
+  contains_public_positioning: true
+allowed_actions:
+  - "document_drafting"
+  - "analysis"
+  - "summarization"
+  - "recommendation"
+forbidden_actions:
+  - "direct_production_change"
+  - "irreversible_data_deletion"

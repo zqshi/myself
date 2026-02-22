@@ -1,0 +1,3 @@
+{"task_id":"bench-001","task_type":"tech_scan","objective":"Summarize this week's top 3 new model releases and relevance","constraints":"No external commitments","expected":{"must_include":["conclusion","evidence","risks","next_actions"]}}
+{"task_id":"bench-002","task_type":"meeting_minutes","objective":"Convert meeting notes to action items with owner/deadline","constraints":"Flag missing owner/deadline","expected":{"must_include":["conclusion","evidence","risks","next_actions"]}}
+{"task_id":"bench-003","task_type":"weekly_report","objective":"Generate weekly report and top 5 decisions needed","constraints":"Keep concise and decision-oriented","expected":{"must_include":["conclusion","evidence","risks","next_actions"]}}

@@ -1,0 +1,8 @@
+acceptance_rate_min: 0.75
+first_pass_rate_min: 0.60
+rework_rate_max: 0.25
+escalation_rate_max: 0.20
+canary_window_tasks: 30
+rollback_if:
+  acceptance_drop_gt: 0.05
+  rework_rise_gt: 0.08

@@ -1,0 +1,2 @@
+{"source":"feishu","task_type":"meeting_minutes","objective":"Convert 2026-02-22 architecture sync notes into action items","constraints":"Flag items without owner or deadline"}
+{"source":"email","task_type":"tech_scan","objective":"Assess if new open-source agent framework should enter pre-evaluation","constraints":"No external commitment; include risks"}

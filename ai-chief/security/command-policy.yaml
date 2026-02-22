@@ -1,0 +1,154 @@
+version: "1.0"
+owner: "pm-digital-twin"
+default_action: "require_approval" # allow | deny | require_approval
+
+execution:
+  allowed_workdirs:
+    - "/Users/zqs/Downloads/project/myself"
+    - "/tmp"
+  max_runtime_seconds: 180
+  max_parallel_commands: 4
+  log_all_commands: true
+  redact_patterns:
+    - "(?i)ghp_[A-Za-z0-9]+"
+    - "(?i)github_pat_[A-Za-z0-9_]+"
+    - "(?i)api[_-]?key\\s*=\\s*[^\\s]+"
+
+network:
+  allowed_domains:
+    - "github.com"
+    - "api.github.com"
+    - "raw.githubusercontent.com"
+  blocked_domains:
+    - "*"
+  blocked_domains_exceptions:
+    - "github.com"
+    - "api.github.com"
+    - "raw.githubusercontent.com"
+
+profiles:
+  github_search:
+    description: "Read-only GitHub discovery and metadata queries"
+    action: "allow"
+    commands:
+      - prefix: ["gh", "search", "repos"]
+      - prefix: ["gh", "search", "code"]
+      - prefix: ["gh", "repo", "view"]
+      - prefix: ["gh", "repo", "list"]
+      - prefix: ["gh", "api"]
+        args_allow_regex:
+          - "^search/"
+          - "^repos/[^/]+/[^/]+$"
+      - prefix: ["curl", "-sS"]
+        args_allow_regex:
+          - "^https://api\\.github\\.com/.*"
+          - "^https://raw\\.githubusercontent\\.com/.*"
+
+  local_skill_discovery:
+    description: "Read local skills and workspace content"
+    action: "allow"
+    commands:
+      - prefix: ["rg"]
+      - prefix: ["rg", "--files"]
+      - prefix: ["find"]
+      - prefix: ["ls"]
+      - prefix: ["cat"]
+      - prefix: ["sed"]
+      - prefix: ["awk"]
+      - prefix: ["head"]
+      - prefix: ["tail"]
+      - prefix: ["wc"]
+
+  repo_readonly:
+    description: "Read-only git inspection"
+    action: "allow"
+    commands:
+      - prefix: ["git", "status"]
+      - prefix: ["git", "log"]
+      - prefix: ["git", "show"]
+      - prefix: ["git", "diff"]
+      - prefix: ["git", "branch"]
+      - prefix: ["git", "fetch"]
+
+  repo_write_guarded:
+    description: "Common write operations requiring explicit approval"
+    action: "require_approval"
+    commands:
+      - prefix: ["git", "add"]
+      - prefix: ["git", "commit"]
+      - prefix: ["git", "push"]
+      - prefix: ["git", "checkout"]
+      - prefix: ["git", "merge"]
+      - prefix: ["git", "rebase"]
+
+  clone_guarded:
+    description: "Allow clone only into approved workdir"
+    action: "require_approval"
+    commands:
+      - prefix: ["git", "clone"]
+      - prefix: ["gh", "repo", "clone"]
+    constraints:
+      require_target_under_workdir: true
+
+  scripts_guarded:
+    description: "Run project scripts with approval"
+    action: "require_approval"
+    commands:
+      - prefix: ["python3"]
+      - prefix: ["bash"]
+      - prefix: ["sh"]
+
+  destructive_blocked:
+    description: "Never auto-run destructive/system-level commands"
+    action: "deny"
+    commands:
+      - prefix: ["rm", "-rf", "/"]
+      - prefix: ["sudo"]
+      - prefix: ["mkfs"]
+      - prefix: ["dd"]
+      - prefix: ["shutdown"]
+      - prefix: ["reboot"]
+      - prefix: ["git", "reset", "--hard"]
+      - prefix: ["git", "clean", "-fdx"]
+      - prefix: ["docker", "system", "prune", "-a"]
+      - prefix: ["kubectl", "delete"]
+
+risk_rules:
+  require_approval_if_contains:
+    - "--force"
+    - "--hard"
+    - "-D"
+    - "|"
+    - "&&"
+    - ";"
+  deny_if_matches_regex:
+    - "(^|\\s)rm\\s+-rf\\s+/(\\s|$)"
+    - "(^|\\s)sudo(\\s|$)"
+
+audit:
+  sink: "/Users/zqs/Downloads/project/myself/ai-chief/logs/command-audit.jsonl"
+  include_stdout_preview_chars: 600
+  include_stderr_preview_chars: 600
+  include_exit_code: true
+  include_duration_ms: true
+
+human_approval:
+  mode: "two_step"
+  ttl_seconds: 300
+  required_fields:
+    - "request_id"
+    - "reason"
+    - "approver"
+
+examples:
+  - name: "search rust agent repos"
+    command: "gh search repos \"agent framework language:rust stars:>200\" --limit 20"
+    expected_action: "allow"
+
+  - name: "clone candidate repo"
+    command: "gh repo clone owner/repo /Users/zqs/Downloads/project/myself/sandbox/repo"
+    expected_action: "require_approval"
+
+  - name: "dangerous cleanup"
+    command: "git reset --hard && git clean -fdx"
+    expected_action: "deny"

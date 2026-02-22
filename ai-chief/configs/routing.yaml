@@ -1,0 +1,20 @@
+routes:
+  tech_scan:
+    primary_agent: doer
+    critic_required: true
+  meeting_minutes:
+    primary_agent: doer
+    critic_required: true
+  prd_draft:
+    primary_agent: doer
+    critic_required: true
+  weekly_report:
+    primary_agent: doer
+    critic_required: true
+fallback:
+  unknown_task_type:
+    primary_agent: doer
+    critic_required: true
+escalation:
+  trigger_on_low_confidence: true
+  trigger_on_redline: true
