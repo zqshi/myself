@@ -76,10 +76,10 @@
       "name": "BuildWise",
       "repo_path": "/Users/zqs/Downloads/project/BuildWise",
       "tech": [],
-      "goal": "",
-      "goal_status": "needs_confirmation",
+      "goal": "构建“业务意图编译器”，以统一项目模型为唯一事实来源，将业务意图转化为可运行、可维护、可演进、可追溯的软件资产。",
+      "goal_status": "confirmed",
       "execution_scope": "all_execution_tasks",
-      "notes": ""
+      "notes": "来源: docs/10-产品顶层设计（执行版）.md"
     },
     {
       "name": "claude-agent-sdk-python",
@@ -167,10 +167,10 @@
       "name": "myself",
       "repo_path": "/Users/zqs/Downloads/project/myself",
       "tech": [],
-      "goal": "",
-      "goal_status": "needs_confirmation",
+      "goal": "建立一个可持续自进化的数字分身，能够在受控权限下执行任务、管理项目、持续提升并逼近替代用户执行层工作。",
+      "goal_status": "confirmed",
       "execution_scope": "all_execution_tasks",
-      "notes": ""
+      "notes": "来源: 当前对话目标定义"
     },
     {
       "name": "nuwax",
@@ -305,5 +305,7 @@
       "execution_scope": "all_execution_tasks",
       "notes": ""
     }
-  ]
+  ],
+  "focus_projects": "all",
+  "ignored_projects_count": 0
 }

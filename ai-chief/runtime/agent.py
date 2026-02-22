@@ -74,6 +74,8 @@ def cmd_project_command_request(args: argparse.Namespace) -> None:
     project = get_project(args.project_id)
     if not project:
         raise SystemExit(json.dumps({"error": f"project_id not found: {args.project_id}"}))
+    if not project.get("enabled", True):
+        raise SystemExit(json.dumps({"error": f"project is disabled/ignored: {args.project_id}"}))
     policy = load_policy(Path(args.policy))
     rec = create_request(
         policy,
@@ -89,6 +91,8 @@ def cmd_project_add_task(args: argparse.Namespace) -> None:
     project = get_project(args.project_id)
     if not project:
         raise SystemExit(json.dumps({"error": f"project_id not found: {args.project_id}"}))
+    if not project.get("enabled", True):
+        raise SystemExit(json.dumps({"error": f"project is disabled/ignored: {args.project_id}"}))
     payload = {
         "project_id": args.project_id,
         "repo_path": project["repo_path"],
@@ -339,6 +343,9 @@ class AgentAPIHandler(BaseHTTPRequestHandler):
                 if not project:
                     self._json(404, {"error": "project not found"})
                     return
+                if not project.get("enabled", True):
+                    self._json(403, {"error": "project disabled/ignored"})
+                    return
                 policy = load_policy(Path(payload.get("policy", str(DEFAULT_POLICY))))
                 reason = payload.get("reason")
                 rec = create_request(
@@ -359,6 +366,9 @@ class AgentAPIHandler(BaseHTTPRequestHandler):
                 project = get_project(project_id)
                 if not project:
                     self._json(404, {"error": "project not found"})
+                    return
+                if not project.get("enabled", True):
+                    self._json(403, {"error": "project disabled/ignored"})
                     return
                 task_type = payload.get("task_type", "unknown")
                 objective = payload.get("objective", "")
