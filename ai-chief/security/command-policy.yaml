@@ -4,6 +4,7 @@ default_action: "require_approval" # allow | deny | require_approval
 
 execution:
   allowed_workdirs:
+    - "/Users/zqs/Downloads/project"
     - "/Users/zqs/Downloads/project/myself"
     - "/tmp"
   max_runtime_seconds: 180
@@ -27,6 +28,22 @@ network:
     - "raw.githubusercontent.com"
 
 profiles:
+  skills_discovery:
+    description: "Discover local/remote skills metadata with low risk"
+    action: "allow"
+    commands:
+      - prefix: ["npx", "skills", "find"]
+      - prefix: ["npx", "skills", "list"]
+      - prefix: ["npx", "skills", "check"]
+
+  skills_install_guarded:
+    description: "Install or update skills only with explicit approval"
+    action: "require_approval"
+    commands:
+      - prefix: ["npx", "skills", "add"]
+      - prefix: ["npx", "skills", "install"]
+      - prefix: ["npx", "skills", "update"]
+
   github_search:
     description: "Read-only GitHub discovery and metadata queries"
     action: "allow"

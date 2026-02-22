@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+from prompt_registry import compose_prompt
+
+
+ACTIVE_SKILL = "review"
+
 
 def review(task: dict, result: dict) -> dict:
+    _prompt = compose_prompt(ACTIVE_SKILL)
+
     findings = []
     required = ["conclusion", "evidence", "risks", "next_actions", "confidence", "need_human_decision"]
     missing = [k for k in required if k not in result]
@@ -17,4 +24,5 @@ def review(task: dict, result: dict) -> dict:
         "missing_evidence": [],
         "escalation_needed": escalation,
         "revision_guidance": ["Add more concrete evidence if score < 90"] if score < 90 else [],
+        "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
     }

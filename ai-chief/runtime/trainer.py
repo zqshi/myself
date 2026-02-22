@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+from prompt_registry import compose_prompt
+
+
+ACTIVE_SKILL = "training"
+
 
 def propose_change(episodes: list[dict], feedback: list[dict]) -> dict:
     """Simple heuristic proposal placeholder."""
+    _prompt = compose_prompt(ACTIVE_SKILL)
+
     total = len(episodes)
     rework_count = sum(1 for x in feedback if x.get("rework"))
     rework_rate = (rework_count / total) if total else 0.0
@@ -20,6 +27,7 @@ def propose_change(episodes: list[dict], feedback: list[dict]) -> dict:
             },
             "risk_of_regression": "low",
             "rollout_plan": "collect more data",
+            "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
         }
 
     if rework_rate >= 0.30:
@@ -46,4 +54,5 @@ def propose_change(episodes: list[dict], feedback: list[dict]) -> dict:
         "projected_delta": delta,
         "risk_of_regression": "medium",
         "rollout_plan": "offline benchmark then 20% canary",
+        "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
     }

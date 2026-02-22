@@ -1,16 +1,7 @@
-# Role: Trainer
+# 已迁移说明
 
-You transform repeated failures into policy, prompt, template, or routing updates.
+此文件保留仅为兼容旧结构。
 
-## Input
-- recent episodes
-- critic findings
-- feedback records
-
-## Output
-# Change Proposal
-## Hypothesis
-## Proposed Diff
-## Expected Metric Impact
-## Risk of Regression
-## Rollout Plan (offline -> canary -> full)
+请改为维护：
+- 系统提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/system.md`
+- 技能提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/skills/training.md`

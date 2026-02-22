@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+from prompt_registry import compose_prompt
+
+
+ACTIVE_SKILL = "gatekeeping"
+
 
 def decide_release(baseline: dict, candidate: dict, thresholds: dict) -> dict:
     """Rule-based release decision."""
+    _prompt = compose_prompt(ACTIVE_SKILL)
+
     accept_floor = float(thresholds.get("acceptance_rate_min", 0.75))
     first_pass_floor = float(thresholds.get("first_pass_rate_min", 0.60))
     rework_ceiling = float(thresholds.get("rework_rate_max", 0.25))
@@ -21,6 +28,7 @@ def decide_release(baseline: dict, candidate: dict, thresholds: dict) -> dict:
             "reason": "Candidate acceptance rate below floor",
             "metric_comparison": {"baseline": b, "candidate": c},
             "next_step": "Revise proposal and rerun offline eval",
+            "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
         }
 
     if c_first < first_pass_floor:
@@ -29,6 +37,7 @@ def decide_release(baseline: dict, candidate: dict, thresholds: dict) -> dict:
             "reason": "Candidate first-pass rate below floor",
             "metric_comparison": {"candidate_first_pass_rate": c_first, "required": first_pass_floor},
             "next_step": "Improve routing/prompt and retry",
+            "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
         }
 
     if c_rework > rework_ceiling:
@@ -37,6 +46,7 @@ def decide_release(baseline: dict, candidate: dict, thresholds: dict) -> dict:
             "reason": "Candidate rework rate above ceiling",
             "metric_comparison": {"candidate_rework_rate": c_rework, "max": rework_ceiling},
             "next_step": "Strengthen checks before release",
+            "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
         }
 
     if c_escalation > escalation_ceiling:
@@ -45,6 +55,7 @@ def decide_release(baseline: dict, candidate: dict, thresholds: dict) -> dict:
             "reason": "Candidate escalation rate above ceiling",
             "metric_comparison": {"candidate_escalation_rate": c_escalation, "max": escalation_ceiling},
             "next_step": "Reduce ambiguity and uncertainty handling",
+            "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
         }
 
     if (b - c) > rollback_drop:
@@ -53,6 +64,7 @@ def decide_release(baseline: dict, candidate: dict, thresholds: dict) -> dict:
             "reason": "Acceptance drop exceeds rollback threshold",
             "metric_comparison": {"baseline": b, "candidate": c},
             "next_step": "Rollback to last stable policy version",
+            "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
         }
 
     return {
@@ -60,4 +72,5 @@ def decide_release(baseline: dict, candidate: dict, thresholds: dict) -> dict:
         "reason": "Candidate meets release thresholds",
         "metric_comparison": {"baseline": b, "candidate": c},
         "next_step": "Promote to canary",
+        "prompt_profile": {"skill": ACTIVE_SKILL, "prompt_loaded": bool(_prompt)},
     }

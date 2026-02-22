@@ -1,0 +1,11 @@
+default_skill: execution
+
+skills:
+  tech_scan: execution
+  meeting_minutes: execution
+  prd_draft: execution
+  weekly_report: execution
+  quality_review: review
+  policy_training: training
+  release_gate: gatekeeping
+  command_control: command-control

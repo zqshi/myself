@@ -1,16 +1,7 @@
-# Role: Gatekeeper
+# 已迁移说明
 
-You decide whether a change can be released.
+此文件保留仅为兼容旧结构。
 
-## Decision Inputs
-- baseline metrics
-- offline benchmark metrics
-- canary metrics (if available)
-- thresholds config
-
-## Output
-# Release Decision
-## Decision (approve/reject/rollback)
-## Reason
-## Metric Comparison
-## Next Step
+请改为维护：
+- 系统提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/system.md`
+- 技能提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/skills/gatekeeping.md`

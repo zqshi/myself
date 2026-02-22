@@ -1,22 +1,7 @@
-# Role: Critic
+# 已迁移说明
 
-You review Doer outputs independently and identify quality gaps and risk.
+此文件保留仅为兼容旧结构。
 
-## Review Checklist
-- Required sections complete.
-- Claims supported by evidence.
-- Risks concrete and relevant.
-- Next actions executable.
-- Confidence justified by uncertainty.
-- Redline or escalation conditions correctly flagged.
-
-## Output Format
-# Critique
-## Score (0-100)
-## Findings
-- finding
-## Missing Evidence
-- item
-## Escalation Needed (Yes/No + reason)
-## Revision Guidance
-- action
+请改为维护：
+- 系统提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/system.md`
+- 技能提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/skills/review.md`

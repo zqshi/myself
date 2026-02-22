@@ -7,6 +7,32 @@ A runnable scaffold for a self-improving PM agent loop:
 - Trainer/Gatekeeper release decision cycle
 - Policy version activation and rollback-ready history
 
+## Prompt architecture (single persona + skills spec)
+
+This project now uses:
+- One system prompt (single digital-twin persona)
+- Multiple skills using `SKILL.md` structure (capability modules)
+
+Maintain here:
+- System prompt:
+  - `/Users/zqs/Downloads/project/myself/ai-chief/prompts/system.md`
+- Skills:
+  - `/Users/zqs/Downloads/project/myself/ai-chief/skills/<skill-name>/SKILL.md`
+- Skill routing:
+  - `/Users/zqs/Downloads/project/myself/ai-chief/configs/prompt-routing.yaml`
+
+Compatibility-only legacy files (do not maintain as primary):
+- `/Users/zqs/Downloads/project/myself/ai-chief/prompts/doer.md`
+- `/Users/zqs/Downloads/project/myself/ai-chief/prompts/critic.md`
+- `/Users/zqs/Downloads/project/myself/ai-chief/prompts/trainer.md`
+- `/Users/zqs/Downloads/project/myself/ai-chief/prompts/gatekeeper.md`
+
+Check active prompt/skill manifest:
+
+```bash
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh show-prompts
+```
+
 ## Quick start
 
 ```bash
@@ -129,6 +155,12 @@ Main commands:
 
 # self-evolution cycle
 /Users/zqs/Downloads/project/myself/ai-chief/agent.sh evolve --window 200 --auto-activate
+
+# discover and register all projects under /Users/zqs/Downloads/project
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh projects-discover --root /Users/zqs/Downloads/project --max-depth 2
+
+# list registered projects
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh projects-list --enabled-only
 ```
 
 ## Bash command control (two-step approval)
@@ -154,6 +186,26 @@ Pending command requests can also be listed via:
 python3 /Users/zqs/Downloads/project/myself/ai-chief/runtime/command_guard.py list-requests --status pending
 ```
 
+Project-scoped command request:
+
+```bash
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh project-command-request \
+  --project-id openclaw \
+  --command "git status" \
+  --reason "daily repo check"
+
+# create a task bound to a project
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh project-add-task \
+  --project-id openclaw \
+  --task-type weekly_report \
+  --objective "Summarize this week's openclaw progress and blockers"
+```
+
+Skill/GitHub capability search policy:
+- `npx skills find/list/check` => allow
+- `npx skills add/install/update` => require approval
+- `gh search repos` => allow (read-only discovery)
+
 ## HTTP API (local)
 
 ```bash
@@ -168,3 +220,31 @@ Endpoints:
 - `POST /evolve` body: `{\"window\":200,\"auto_activate\":true}`
 - `POST /commands/request` body: `{\"command\":\"python3 -V\",\"cwd\":\"/Users/zqs/Downloads/project/myself\",\"reason\":\"check\"}`
 - `POST /commands/approve` body: `{\"request_id\":\"req-xxxx\",\"approved_by\":\"zqs\",\"reason\":\"ok\",\"execute\":true}`
+- `GET /growth/plan`
+- `GET /projects`
+- `POST /growth/request` body: `{\"cwd\":\"/Users/zqs/Downloads/project/myself\",\"window\":200,\"top_k\":3}`
+- `POST /projects/discover` body: `{\"root\":\"/Users/zqs/Downloads/project\",\"max_depth\":2}`
+- `POST /projects/command-request` body: `{\"project_id\":\"openclaw\",\"command\":\"git status\",\"reason\":\"daily check\"}`
+- `POST /projects/add-task` body: `{\"project_id\":\"openclaw\",\"task_type\":\"weekly_report\",\"objective\":\"...\"}`
+
+## Self-growth loop
+
+Growth commands:
+
+```bash
+# generate growth plan from recent failures
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh growth-plan --window 200 --top-k 3
+
+# generate and enqueue discovery requests (skills + GitHub)
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh growth-request \
+  --window 200 \
+  --top-k 3 \
+  --cwd /Users/zqs/Downloads/project/myself
+```
+
+Recommended cycle:
+1. Run daily work (`agent.sh run`)
+2. Run growth plan (`agent.sh growth-plan`)
+3. Enqueue growth discovery requests (`agent.sh growth-request`)
+4. Approve/install high-value skills via two-step approval
+5. Run `agent.sh evolve --auto-activate` and monitor metrics

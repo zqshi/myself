@@ -1,25 +1,7 @@
-# Role: Doer
+# 已迁移说明
 
-You execute assigned tasks using the active policy and constitution.
+此文件保留仅为兼容旧结构。
 
-## Input Contract
-- task_id
-- task_type
-- objective
-- constraints
-- deadline (optional)
-- context (optional)
-
-## Output Contract (strict)
-# Result
-## Conclusion
-## Evidence
-## Risks
-## Next Actions
-## Confidence (0-1)
-## Need Human Decision (Yes/No + reason)
-
-## Rules
-- Follow guardrails and redlines.
-- If information is missing, state assumptions explicitly.
-- If confidence < threshold, mark human decision as Yes.
+请改为维护：
+- 系统提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/system.md`
+- 技能提示词：`/Users/zqs/Downloads/project/myself/ai-chief/prompts/skills/execution.md`

@@ -1,0 +1,373 @@
+{
+  "root_path": "/Users/zqs/Downloads/project",
+  "project_count": 26,
+  "projects": [
+    {
+      "project_id": "after-sales",
+      "name": "After-sales",
+      "repo_path": "/Users/zqs/Downloads/project/After-sales",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "agent",
+      "name": "Agent",
+      "repo_path": "/Users/zqs/Downloads/project/Agent",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "agent-admin",
+      "name": "agent-admin",
+      "repo_path": "/Users/zqs/Downloads/project/agent-admin",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "agentos",
+      "name": "AgentOS",
+      "repo_path": "/Users/zqs/Downloads/project/AgentOS",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "agentscope",
+      "name": "agentscope",
+      "repo_path": "/Users/zqs/Downloads/project/agentscope/agentscope",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "pytest"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "agentscope-2",
+      "name": "agentscope",
+      "repo_path": "/Users/zqs/Downloads/project/learn/agentscope",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "pytest"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "ai-kit",
+      "name": "ai-kit",
+      "repo_path": "/Users/zqs/Downloads/project/ai-kit",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "buildwise",
+      "name": "BuildWise",
+      "repo_path": "/Users/zqs/Downloads/project/BuildWise",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "claude-agent-sdk-python",
+      "name": "claude-agent-sdk-python",
+      "repo_path": "/Users/zqs/Downloads/project/anthropics/claude-agent-sdk-python",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "pytest"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "coze-studio",
+      "name": "coze-studio\u6263\u5b50",
+      "repo_path": "/Users/zqs/Downloads/project/coze-studio\u6263\u5b50",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "hrssc",
+      "name": "HRssc",
+      "repo_path": "/Users/zqs/Downloads/project/HRssc",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "llm-kg",
+      "name": "LLM-KG",
+      "repo_path": "/Users/zqs/Downloads/project/LLM-KG",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "matrix",
+      "name": "matrix",
+      "repo_path": "/Users/zqs/Downloads/project/matrix",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "memos",
+      "name": "memos\u81ea\u6258\u7ba1\u77e5\u8bc6\u5e93",
+      "repo_path": "/Users/zqs/Downloads/project/memos\u81ea\u6258\u7ba1\u77e5\u8bc6\u5e93",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "go test ./..."
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "myself",
+      "name": "myself",
+      "repo_path": "/Users/zqs/Downloads/project/myself",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "nuwax",
+      "name": "nuwax",
+      "repo_path": "/Users/zqs/Downloads/project/nuwax",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "openclaw",
+      "name": "openclaw",
+      "repo_path": "/Users/zqs/Downloads/project/openclaw",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "product-cocreate-platform",
+      "name": "product-cocreate-platform",
+      "repo_path": "/Users/zqs/Downloads/project/test/product-cocreate-platform",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "ragflow",
+      "name": "ragflow",
+      "repo_path": "/Users/zqs/Downloads/project/ragflow",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "pytest"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "skill",
+      "name": "skill",
+      "repo_path": "/Users/zqs/Downloads/project/skill",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "skills",
+      "name": "skills",
+      "repo_path": "/Users/zqs/Downloads/project/skills",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "thinkcraft",
+      "name": "ThinkCraft",
+      "repo_path": "/Users/zqs/Downloads/project/ThinkCraft",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "thinking-claude",
+      "name": "Thinking-Claude",
+      "repo_path": "/Users/zqs/Downloads/project/Thinking-Claude",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "ui-tars-desktop",
+      "name": "UI-TARS-desktop\u5b57\u8282",
+      "repo_path": "/Users/zqs/Downloads/project/UI-TARS-desktop\u5b57\u8282",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "weknora",
+      "name": "WeKnora",
+      "repo_path": "/Users/zqs/Downloads/project/WeKnora",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "go test ./..."
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "agent-2",
+      "name": "\u3010\u5e9f\u3011Agent",
+      "repo_path": "/Users/zqs/Downloads/project/\u3010\u5e9f\u3011Agent",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "pytest"
+          }
+        ]
+      }
+    }
+  ]
+}

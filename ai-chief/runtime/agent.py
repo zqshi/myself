@@ -9,6 +9,9 @@ from pathlib import Path
 
 import orchestrator
 from command_guard import create_request, load_policy, load_requests, save_requests, execute_command, decide, DEFAULT_POLICY
+from prompt_registry import prompt_manifest
+from self_growth import build_growth_plan, enqueue_growth_requests
+from project_registry import discover_projects, get_project, load_registry, save_registry, DEFAULT_ROOT
 
 ROOT = Path(__file__).resolve().parent.parent
 DAILY_RUN = ROOT / "scripts" / "daily-run.sh"
@@ -35,6 +38,69 @@ def agent_status() -> dict:
 
 def cmd_status(_: argparse.Namespace) -> None:
     print(json.dumps(agent_status(), ensure_ascii=True))
+
+
+def cmd_show_prompts(_: argparse.Namespace) -> None:
+    print(json.dumps(prompt_manifest(), ensure_ascii=True))
+
+
+def cmd_growth_plan(args: argparse.Namespace) -> None:
+    print(json.dumps(build_growth_plan(window=args.window, top_k=args.top_k), ensure_ascii=True))
+
+
+def cmd_growth_request(args: argparse.Namespace) -> None:
+    plan = build_growth_plan(window=args.window, top_k=args.top_k)
+    out = enqueue_growth_requests(plan, cwd=Path(args.cwd), policy_path=Path(args.policy))
+    print(json.dumps({"plan": plan, "enqueued": out}, ensure_ascii=True))
+
+
+def cmd_projects_discover(args: argparse.Namespace) -> None:
+    root = Path(args.root).resolve()
+    projects = discover_projects(root=root, max_depth=args.max_depth)
+    reg = save_registry(projects, root=root)
+    print(json.dumps(reg, ensure_ascii=True))
+
+
+def cmd_projects_list(args: argparse.Namespace) -> None:
+    reg = load_registry()
+    projects = reg.get("projects", [])
+    if args.enabled_only:
+        projects = [p for p in projects if p.get("enabled", True)]
+    print(json.dumps({"root_path": reg.get("root_path"), "count": len(projects), "projects": projects}, ensure_ascii=True))
+
+
+def cmd_project_command_request(args: argparse.Namespace) -> None:
+    project = get_project(args.project_id)
+    if not project:
+        raise SystemExit(json.dumps({"error": f"project_id not found: {args.project_id}"}))
+    policy = load_policy(Path(args.policy))
+    rec = create_request(
+        policy,
+        args.command,
+        Path(project["repo_path"]).resolve(),
+        reason=args.reason or f"project command: {args.project_id}",
+    )
+    rec["project_id"] = args.project_id
+    print(json.dumps(rec, ensure_ascii=True))
+
+
+def cmd_project_add_task(args: argparse.Namespace) -> None:
+    project = get_project(args.project_id)
+    if not project:
+        raise SystemExit(json.dumps({"error": f"project_id not found: {args.project_id}"}))
+    payload = {
+        "project_id": args.project_id,
+        "repo_path": project["repo_path"],
+        "extra_constraints": args.constraints or "",
+    }
+    task_id = orchestrator.add_task(
+        source=f"project:{args.project_id}",
+        task_type=args.task_type,
+        objective=args.objective,
+        constraints=json.dumps(payload, ensure_ascii=True),
+        deadline=args.deadline,
+    )
+    print(json.dumps({"task_id": task_id, "project": project}, ensure_ascii=True))
 
 
 def cmd_run(args: argparse.Namespace) -> None:
@@ -144,6 +210,13 @@ class AgentAPIHandler(BaseHTTPRequestHandler):
         if self.path == "/status":
             self._json(200, agent_status())
             return
+        if self.path == "/projects":
+            reg = load_registry()
+            self._json(200, reg)
+            return
+        if self.path.startswith("/growth/plan"):
+            self._json(200, build_growth_plan(window=200, top_k=3))
+            return
         if self.path.startswith("/commands/pending"):
             pending = [x for x in load_requests().values() if x.get("status") == "pending"]
             self._json(200, {"count": len(pending), "requests": pending})
@@ -215,6 +288,77 @@ class AgentAPIHandler(BaseHTTPRequestHandler):
                 self._json(200, rec)
                 return
 
+            if self.path == "/growth/request":
+                policy = Path(payload.get("policy", str(DEFAULT_POLICY)))
+                cwd = Path(payload.get("cwd", str(ROOT.parent)))
+                window = int(payload.get("window", 200))
+                top_k = int(payload.get("top_k", 3))
+                plan = build_growth_plan(window=window, top_k=top_k)
+                out = enqueue_growth_requests(plan, cwd=cwd, policy_path=policy)
+                self._json(200, {"plan": plan, "enqueued": out})
+                return
+
+            if self.path == "/projects/discover":
+                root = Path(payload.get("root", str(DEFAULT_ROOT)))
+                max_depth = int(payload.get("max_depth", 2))
+                projects = discover_projects(root=root, max_depth=max_depth)
+                reg = save_registry(projects, root=root)
+                self._json(200, reg)
+                return
+
+            if self.path == "/projects/command-request":
+                project_id = payload.get("project_id")
+                command = payload.get("command")
+                if not project_id or not command:
+                    self._json(400, {"error": "project_id and command required"})
+                    return
+                project = get_project(project_id)
+                if not project:
+                    self._json(404, {"error": "project not found"})
+                    return
+                policy = load_policy(Path(payload.get("policy", str(DEFAULT_POLICY))))
+                reason = payload.get("reason")
+                rec = create_request(
+                    policy,
+                    command,
+                    Path(project["repo_path"]).resolve(),
+                    reason=reason or f"project command: {project_id}",
+                )
+                rec["project_id"] = project_id
+                self._json(200, rec)
+                return
+
+            if self.path == "/projects/add-task":
+                project_id = payload.get("project_id")
+                if not project_id:
+                    self._json(400, {"error": "project_id required"})
+                    return
+                project = get_project(project_id)
+                if not project:
+                    self._json(404, {"error": "project not found"})
+                    return
+                task_type = payload.get("task_type", "unknown")
+                objective = payload.get("objective", "")
+                deadline = payload.get("deadline")
+                extra_constraints = payload.get("constraints", "")
+                constraints = json.dumps(
+                    {
+                        "project_id": project_id,
+                        "repo_path": project["repo_path"],
+                        "extra_constraints": extra_constraints,
+                    },
+                    ensure_ascii=True,
+                )
+                task_id = orchestrator.add_task(
+                    source=f"project:{project_id}",
+                    task_type=task_type,
+                    objective=objective,
+                    constraints=constraints,
+                    deadline=deadline,
+                )
+                self._json(200, {"task_id": task_id, "project": project})
+                return
+
             self._json(404, {"error": "not_found"})
         except Exception as exc:
             self._json(500, {"error": str(exc)})
@@ -232,6 +376,45 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_status = sub.add_parser("status")
     p_status.set_defaults(func=cmd_status)
+
+    p_prompts = sub.add_parser("show-prompts")
+    p_prompts.set_defaults(func=cmd_show_prompts)
+
+    p_gp = sub.add_parser("growth-plan")
+    p_gp.add_argument("--window", type=int, default=200)
+    p_gp.add_argument("--top-k", type=int, default=3)
+    p_gp.set_defaults(func=cmd_growth_plan)
+
+    p_gr = sub.add_parser("growth-request")
+    p_gr.add_argument("--window", type=int, default=200)
+    p_gr.add_argument("--top-k", type=int, default=3)
+    p_gr.add_argument("--cwd", default=str(ROOT.parent))
+    p_gr.add_argument("--policy", default=str(DEFAULT_POLICY))
+    p_gr.set_defaults(func=cmd_growth_request)
+
+    p_pd = sub.add_parser("projects-discover")
+    p_pd.add_argument("--root", default=str(DEFAULT_ROOT))
+    p_pd.add_argument("--max-depth", type=int, default=2)
+    p_pd.set_defaults(func=cmd_projects_discover)
+
+    p_pl = sub.add_parser("projects-list")
+    p_pl.add_argument("--enabled-only", action="store_true")
+    p_pl.set_defaults(func=cmd_projects_list)
+
+    p_pcr = sub.add_parser("project-command-request")
+    p_pcr.add_argument("--project-id", required=True)
+    p_pcr.add_argument("--command", required=True)
+    p_pcr.add_argument("--reason", default=None)
+    p_pcr.add_argument("--policy", default=str(DEFAULT_POLICY))
+    p_pcr.set_defaults(func=cmd_project_command_request)
+
+    p_pat = sub.add_parser("project-add-task")
+    p_pat.add_argument("--project-id", required=True)
+    p_pat.add_argument("--task-type", required=True)
+    p_pat.add_argument("--objective", required=True)
+    p_pat.add_argument("--constraints", default="")
+    p_pat.add_argument("--deadline", default=None)
+    p_pat.set_defaults(func=cmd_project_add_task)
 
     p_run = sub.add_parser("run")
     p_run.add_argument("--inbox", default=None)
