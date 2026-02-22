@@ -7,6 +7,12 @@ A runnable scaffold for a self-improving PM agent loop:
 - Trainer/Gatekeeper release decision cycle
 - Policy version activation and rollback-ready history
 
+## 文档导航
+
+- 总览：`/Users/zqs/Downloads/project/myself/ai-chief/docs/01-数字分身总览.md`
+- 使用手册：`/Users/zqs/Downloads/project/myself/ai-chief/docs/02-使用手册.md`
+- 运维与自进化：`/Users/zqs/Downloads/project/myself/ai-chief/docs/03-运维与自进化手册.md`
+
 ## Prompt architecture (single persona + skills spec)
 
 This project now uses:
