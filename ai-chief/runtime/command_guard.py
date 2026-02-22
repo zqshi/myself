@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import re
@@ -21,10 +22,15 @@ except Exception as exc:  # pragma: no cover
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_POLICY = ROOT / "security" / "command-policy.yaml"
+REQUEST_STORE = ROOT / "memory" / "command_requests.json"
 
 
 class GuardError(Exception):
     pass
+
+
+def now_iso() -> str:
+    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def load_policy(path: Path) -> dict:
@@ -49,7 +55,6 @@ def path_under_allowed(cwd: Path, allowed: list[str]) -> bool:
 
 
 def split_segments(raw_cmd: str) -> list[str]:
-    # Lightweight splitter; policy already treats shell control ops as risky.
     return [raw_cmd.strip()] if raw_cmd.strip() else []
 
 
@@ -81,7 +86,7 @@ def find_matching_profile(policy: dict, tokens: list[str]) -> tuple[str | None, 
     return None, None, None
 
 
-def enforce_constraints(tokens: list[str], profile: dict | None, cmd_rule: dict | None, policy: dict, cwd: Path) -> tuple[bool, str | None]:
+def enforce_constraints(tokens: list[str], profile: dict | None, policy: dict, cwd: Path) -> tuple[bool, str | None]:
     if not profile:
         return True, None
 
@@ -92,7 +97,6 @@ def enforce_constraints(tokens: list[str], profile: dict | None, cmd_rule: dict 
             return False, "no allowed_workdirs configured"
         if len(tokens) < 2:
             return False, "missing target path"
-        # Use last token as target path for clone operations.
         target = Path(tokens[-1]).expanduser()
         if not target.is_absolute():
             target = (cwd / target).resolve()
@@ -143,7 +147,7 @@ def decide(policy: dict, raw_cmd: str, cwd: Path) -> dict:
     profile_name, profile, cmd_rule = find_matching_profile(policy, tokens)
 
     if profile:
-        ok, detail = enforce_constraints(tokens, profile, cmd_rule, policy, cwd)
+        ok, detail = enforce_constraints(tokens, profile, policy, cwd)
         if not ok:
             return {
                 "action": "deny",
@@ -190,6 +194,75 @@ def run_exec(tokens: list[str], cwd: Path, timeout_s: int) -> subprocess.Complet
     return subprocess.run(tokens, cwd=str(cwd), capture_output=True, text=True, timeout=timeout_s, check=False)
 
 
+def load_requests() -> dict:
+    if not REQUEST_STORE.exists():
+        return {}
+    return json.loads(REQUEST_STORE.read_text(encoding="utf-8"))
+
+
+def save_requests(data: dict) -> None:
+    REQUEST_STORE.parent.mkdir(parents=True, exist_ok=True)
+    REQUEST_STORE.write_text(json.dumps(data, ensure_ascii=True, indent=2), encoding="utf-8")
+
+
+def execute_command(policy: dict, request: dict, approved_by: str | None = None, approval_reason: str | None = None) -> dict:
+    cwd = Path(request["cwd"])
+    command = request["command"]
+    started = time.time()
+
+    tokens = shlex.split(command)
+    max_runtime = int(policy.get("execution", {}).get("max_runtime_seconds", 180))
+    cp = run_exec(tokens, cwd, max_runtime)
+
+    out_lim = int(policy.get("audit", {}).get("include_stdout_preview_chars", 600))
+    err_lim = int(policy.get("audit", {}).get("include_stderr_preview_chars", 600))
+    redact_patterns = policy.get("execution", {}).get("redact_patterns", [])
+
+    result = {
+        "status": "executed",
+        "executed": True,
+        "exit_code": cp.returncode,
+        "duration_ms": int((time.time() - started) * 1000),
+        "stdout_preview": redact((cp.stdout or "")[:out_lim], redact_patterns),
+        "stderr_preview": redact((cp.stderr or "")[:err_lim], redact_patterns),
+        "approved_by": approved_by,
+        "approval_reason": approval_reason,
+    }
+    return result
+
+
+def create_request(policy: dict, command: str, cwd: Path, reason: str | None = None) -> dict:
+    decision_result = decide(policy, command, cwd)
+    request_id = f"req-{uuid.uuid4().hex[:8]}"
+    status = "pending"
+    if decision_result["action"] == "deny":
+        status = "denied"
+    elif decision_result["action"] == "allow":
+        status = "approved"
+
+    record = {
+        "request_id": request_id,
+        "command": command,
+        "cwd": str(cwd),
+        "decision": decision_result,
+        "status": status,
+        "created_at": now_iso(),
+        "request_reason": reason,
+        "approved_by": None,
+        "approval_reason": None,
+        "executed": False,
+        "exit_code": None,
+        "duration_ms": None,
+        "stdout_preview": "",
+        "stderr_preview": "",
+    }
+
+    requests = load_requests()
+    requests[request_id] = record
+    save_requests(requests)
+    return record
+
+
 def cmd_check(args: argparse.Namespace) -> None:
     policy = load_policy(Path(args.policy))
     decision_result = decide(policy, args.command, Path(args.cwd).resolve())
@@ -202,60 +275,171 @@ def cmd_check(args: argparse.Namespace) -> None:
     print(json.dumps(out, ensure_ascii=True))
 
 
+def cmd_request(args: argparse.Namespace) -> None:
+    policy = load_policy(Path(args.policy))
+    cwd = Path(args.cwd).resolve()
+    rec = create_request(policy, args.command, cwd, reason=args.reason)
+
+    event = {
+        "ts": int(time.time()),
+        "request_id": rec["request_id"],
+        "command": rec["command"],
+        "cwd": rec["cwd"],
+        "decision": rec["decision"],
+        "status": rec["status"],
+        "event": "request_created",
+    }
+    write_audit(policy, event)
+
+    if args.execute_if_allow and rec["decision"]["action"] == "allow":
+        result = execute_command(policy, rec)
+        requests = load_requests()
+        requests[rec["request_id"]].update(result)
+        requests[rec["request_id"]]["status"] = "executed"
+        requests[rec["request_id"]]["executed_at"] = now_iso()
+        save_requests(requests)
+
+        event2 = {
+            "ts": int(time.time()),
+            "request_id": rec["request_id"],
+            "command": rec["command"],
+            "cwd": rec["cwd"],
+            "decision": rec["decision"],
+            **result,
+            "event": "executed_auto_allow",
+        }
+        write_audit(policy, event2)
+
+        print(json.dumps(requests[rec["request_id"]], ensure_ascii=True))
+        return
+
+    print(json.dumps(rec, ensure_ascii=True))
+
+
+def cmd_approve(args: argparse.Namespace) -> None:
+    policy = load_policy(Path(args.policy))
+    requests = load_requests()
+    rec = requests.get(args.request_id)
+    if not rec:
+        raise GuardError(f"request not found: {args.request_id}")
+
+    if rec["decision"]["action"] != "require_approval":
+        raise GuardError(f"request does not require approval: {args.request_id}")
+
+    if rec["status"] in ("executed", "denied"):
+        raise GuardError(f"request already finalized: status={rec['status']}")
+
+    rec["approved_by"] = args.approved_by
+    rec["approval_reason"] = args.reason
+    rec["status"] = "approved"
+    rec["approved_at"] = now_iso()
+
+    if args.execute:
+        result = execute_command(policy, rec, approved_by=args.approved_by, approval_reason=args.reason)
+        rec.update(result)
+        rec["status"] = "executed"
+        rec["executed_at"] = now_iso()
+
+    requests[args.request_id] = rec
+    save_requests(requests)
+
+    event = {
+        "ts": int(time.time()),
+        "request_id": rec["request_id"],
+        "command": rec["command"],
+        "cwd": rec["cwd"],
+        "decision": rec["decision"],
+        "status": rec["status"],
+        "approved_by": rec.get("approved_by"),
+        "approval_reason": rec.get("approval_reason"),
+        "executed": rec.get("executed"),
+        "exit_code": rec.get("exit_code"),
+        "duration_ms": rec.get("duration_ms"),
+        "stdout_preview": rec.get("stdout_preview", ""),
+        "stderr_preview": rec.get("stderr_preview", ""),
+        "event": "approved",
+    }
+    write_audit(policy, event)
+
+    print(json.dumps(rec, ensure_ascii=True))
+
+
+def cmd_list_requests(args: argparse.Namespace) -> None:
+    requests = load_requests()
+    items = list(requests.values())
+    items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    if args.status:
+        items = [x for x in items if x.get("status") == args.status]
+    if args.limit:
+        items = items[: args.limit]
+    print(json.dumps({"count": len(items), "requests": items}, ensure_ascii=True))
+
+
 def cmd_exec(args: argparse.Namespace) -> None:
     policy = load_policy(Path(args.policy))
     cwd = Path(args.cwd).resolve()
-    request_id = f"req-{uuid.uuid4().hex[:8]}"
-    started = time.time()
 
-    decision_result = decide(policy, args.command, cwd)
-    action = decision_result["action"]
-    tokens = shlex.split(args.command)
+    rec = create_request(policy, args.command, cwd, reason=args.request_reason)
+    decision_action = rec["decision"]["action"]
 
-    approved = bool(args.approved_by and args.reason)
-    executed = False
-    exit_code = None
-    stdout_preview = ""
-    stderr_preview = ""
+    if decision_action == "deny":
+        event = {
+            "ts": int(time.time()),
+            "request_id": rec["request_id"],
+            "command": rec["command"],
+            "cwd": rec["cwd"],
+            "decision": rec["decision"],
+            "status": "blocked",
+            "event": "exec_blocked",
+        }
+        write_audit(policy, event)
+        print(json.dumps(rec, ensure_ascii=True))
+        return
 
-    if action == "deny":
-        status = "blocked"
-    elif action == "require_approval" and not approved:
-        status = "awaiting_approval"
-    else:
-        max_runtime = int(policy.get("execution", {}).get("max_runtime_seconds", 180))
-        cp = run_exec(tokens, cwd, max_runtime)
-        executed = True
-        exit_code = cp.returncode
+    if decision_action == "require_approval" and not (args.approved_by and args.approval_reason):
+        rec["status"] = "pending"
+        requests = load_requests()
+        requests[rec["request_id"]] = rec
+        save_requests(requests)
 
-        out_lim = int(policy.get("audit", {}).get("include_stdout_preview_chars", 600))
-        err_lim = int(policy.get("audit", {}).get("include_stderr_preview_chars", 600))
-        redact_patterns = policy.get("execution", {}).get("redact_patterns", [])
+        event = {
+            "ts": int(time.time()),
+            "request_id": rec["request_id"],
+            "command": rec["command"],
+            "cwd": rec["cwd"],
+            "decision": rec["decision"],
+            "status": "awaiting_approval",
+            "event": "exec_pending_approval",
+        }
+        write_audit(policy, event)
+        print(json.dumps(rec, ensure_ascii=True))
+        return
 
-        stdout_preview = redact((cp.stdout or "")[:out_lim], redact_patterns)
-        stderr_preview = redact((cp.stderr or "")[:err_lim], redact_patterns)
-        status = "executed"
+    if decision_action == "require_approval":
+        rec["approved_by"] = args.approved_by
+        rec["approval_reason"] = args.approval_reason
 
-    duration_ms = int((time.time() - started) * 1000)
+    result = execute_command(policy, rec, approved_by=args.approved_by, approval_reason=args.approval_reason)
+    rec.update(result)
+    rec["status"] = "executed"
+    rec["executed_at"] = now_iso()
 
-    audit_event = {
+    requests = load_requests()
+    requests[rec["request_id"]] = rec
+    save_requests(requests)
+
+    event = {
         "ts": int(time.time()),
-        "request_id": request_id,
-        "command": args.command,
-        "cwd": str(cwd),
-        "decision": decision_result,
-        "status": status,
-        "approved_by": args.approved_by,
-        "approval_reason": args.reason,
-        "executed": executed,
-        "exit_code": exit_code,
-        "duration_ms": duration_ms,
-        "stdout_preview": stdout_preview,
-        "stderr_preview": stderr_preview,
+        "request_id": rec["request_id"],
+        "command": rec["command"],
+        "cwd": rec["cwd"],
+        "decision": rec["decision"],
+        **result,
+        "event": "exec_completed",
     }
-    write_audit(policy, audit_event)
+    write_audit(policy, event)
 
-    print(json.dumps(audit_event, ensure_ascii=True))
+    print(json.dumps(rec, ensure_ascii=True))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -269,11 +453,31 @@ def build_parser() -> argparse.ArgumentParser:
     p_check.add_argument("--cwd", default=os.getcwd())
     p_check.set_defaults(func=cmd_check)
 
+    p_request = sub.add_parser("request")
+    p_request.add_argument("--command", required=True)
+    p_request.add_argument("--cwd", default=os.getcwd())
+    p_request.add_argument("--reason", default=None)
+    p_request.add_argument("--execute-if-allow", action="store_true")
+    p_request.set_defaults(func=cmd_request)
+
+    p_approve = sub.add_parser("approve")
+    p_approve.add_argument("--request-id", required=True)
+    p_approve.add_argument("--approved-by", required=True)
+    p_approve.add_argument("--reason", required=True)
+    p_approve.add_argument("--execute", action="store_true")
+    p_approve.set_defaults(func=cmd_approve)
+
+    p_lr = sub.add_parser("list-requests")
+    p_lr.add_argument("--status", default=None)
+    p_lr.add_argument("--limit", type=int, default=50)
+    p_lr.set_defaults(func=cmd_list_requests)
+
     p_exec = sub.add_parser("exec")
     p_exec.add_argument("--command", required=True)
     p_exec.add_argument("--cwd", default=os.getcwd())
+    p_exec.add_argument("--request-reason", default=None)
     p_exec.add_argument("--approved-by", default=None)
-    p_exec.add_argument("--reason", default=None)
+    p_exec.add_argument("--approval-reason", default=None)
     p_exec.set_defaults(func=cmd_exec)
 
     return p
@@ -282,7 +486,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    args.func(args)
+    try:
+        args.func(args)
+    except GuardError as exc:
+        print(json.dumps({"error": str(exc)}, ensure_ascii=True))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

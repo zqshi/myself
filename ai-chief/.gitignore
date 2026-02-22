@@ -1,0 +1,8 @@
+# Runtime state
+logs/*.log
+runtime/__pycache__/
+memory/*.db
+memory/command_requests.json
+
+# macOS
+.DS_Store

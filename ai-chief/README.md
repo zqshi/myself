@@ -104,3 +104,67 @@ bash /Users/zqs/Downloads/project/myself/ai-chief/scripts/daily-run.sh --skip-in
 
 Daily run log file pattern:
 - `/Users/zqs/Downloads/project/myself/ai-chief/logs/daily-run-<UTC timestamp>.log`
+
+## Agent entrypoint
+
+Single CLI entry:
+
+```bash
+# wrapper
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh status
+
+# equivalent
+python3 /Users/zqs/Downloads/project/myself/ai-chief/runtime/agent.py status
+```
+
+Main commands:
+
+```bash
+# full daily pipeline
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh run --auto-activate
+
+# ingest + execute only
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh ingest --path /Users/zqs/Downloads/project/myself/ai-chief/inbox/tasks.example.jsonl
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh run-queued --limit 20
+
+# self-evolution cycle
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh evolve --window 200 --auto-activate
+```
+
+## Bash command control (two-step approval)
+
+```bash
+# create command request
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh command-request \
+  --command "python3 -V" \
+  --cwd /Users/zqs/Downloads/project/myself \
+  --reason "sanity check"
+
+# approve and execute
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh command-approve \
+  --request-id <request_id> \
+  --approved-by zqs \
+  --reason "approved local inspection" \
+  --execute
+```
+
+Pending command requests can also be listed via:
+
+```bash
+python3 /Users/zqs/Downloads/project/myself/ai-chief/runtime/command_guard.py list-requests --status pending
+```
+
+## HTTP API (local)
+
+```bash
+python3 /Users/zqs/Downloads/project/myself/ai-chief/runtime/agent.py serve --host 127.0.0.1 --port 8787
+```
+
+Endpoints:
+- `GET /status`
+- `GET /commands/pending`
+- `POST /ingest` body: `{\"path\":\"/abs/path/tasks.jsonl\",\"default_source\":\"api\"}`
+- `POST /run` body: `{\"limit\":20}`
+- `POST /evolve` body: `{\"window\":200,\"auto_activate\":true}`
+- `POST /commands/request` body: `{\"command\":\"python3 -V\",\"cwd\":\"/Users/zqs/Downloads/project/myself\",\"reason\":\"check\"}`
+- `POST /commands/approve` body: `{\"request_id\":\"req-xxxx\",\"approved_by\":\"zqs\",\"reason\":\"ok\",\"execute\":true}`
