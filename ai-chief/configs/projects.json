@@ -1,6 +1,6 @@
 {
   "root_path": "/Users/zqs/Downloads/project",
-  "project_count": 26,
+  "project_count": 27,
   "projects": [
     {
       "project_id": "after-sales",
@@ -133,6 +133,25 @@
       "priority": 50,
       "profile": {
         "recommended_commands": []
+      }
+    },
+    {
+      "project_id": "digital-ecology",
+      "name": "digital ecology",
+      "repo_path": "/Users/zqs/Downloads/project/digital ecology",
+      "enabled": true,
+      "priority": 50,
+      "profile": {
+        "recommended_commands": [
+          {
+            "name": "test",
+            "cmd": "npm test"
+          },
+          {
+            "name": "lint",
+            "cmd": "npm run lint"
+          }
+        ]
       }
     },
     {

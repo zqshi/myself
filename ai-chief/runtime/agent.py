@@ -12,6 +12,7 @@ from command_guard import create_request, load_policy, load_requests, save_reque
 from prompt_registry import prompt_manifest
 from self_growth import build_growth_plan, enqueue_growth_requests
 from project_registry import discover_projects, get_project, load_registry, save_registry, DEFAULT_ROOT
+from execution_pipeline import build_execution_plan, list_ai_tools
 
 ROOT = Path(__file__).resolve().parent.parent
 DAILY_RUN = ROOT / "scripts" / "daily-run.sh"
@@ -128,6 +129,80 @@ def cmd_project_goals_status(_: argparse.Namespace) -> None:
             ensure_ascii=True,
         )
     )
+
+
+def cmd_project_execute_task(args: argparse.Namespace) -> None:
+    project = get_project(args.project_id)
+    if not project:
+        raise SystemExit(json.dumps({"error": f"project_id not found: {args.project_id}"}))
+    if not project.get("enabled", True):
+        raise SystemExit(json.dumps({"error": f"project is disabled: {args.project_id}"}))
+
+    plan = build_execution_plan(
+        project=project,
+        objective=args.objective,
+        acceptance=args.acceptance,
+        constraints=args.constraints,
+        tool_name=args.ai_tool,
+        custom_ai_command=args.ai_command,
+    )
+
+    policy = load_policy(Path(args.policy))
+    created = []
+    for step in plan["steps"]:
+        rec = create_request(
+            policy,
+            step["command"],
+            Path(project["repo_path"]).resolve(),
+            reason=step["reason"],
+        )
+        created.append(
+            {
+                "step": step["step"],
+                "request_id": rec["request_id"],
+                "status": rec["status"],
+                "decision": rec["decision"],
+                "command": step["command"],
+            }
+        )
+
+    print(json.dumps({"plan": plan, "requests": created}, ensure_ascii=True))
+
+
+def cmd_project_approve_chain(args: argparse.Namespace) -> None:
+    requests = load_requests()
+    policy = load_policy(Path(args.policy))
+    ids = [x.strip() for x in args.request_ids.split(",") if x.strip()]
+    results = []
+
+    for rid in ids:
+        rec = requests.get(rid)
+        if not rec:
+            results.append({"request_id": rid, "status": "error", "error": "not_found"})
+            continue
+
+        action = rec.get("decision", {}).get("action")
+        if action == "deny":
+            results.append({"request_id": rid, "status": "blocked", "reason": "deny by policy"})
+            continue
+
+        rec["approved_by"] = args.approved_by
+        rec["approval_reason"] = args.reason
+        rec["status"] = "approved"
+
+        if args.execute:
+            out = execute_command(policy, rec, approved_by=args.approved_by, approval_reason=args.reason)
+            rec.update(out)
+            rec["status"] = "executed"
+        requests[rid] = rec
+        results.append({"request_id": rid, "status": rec["status"], "exit_code": rec.get("exit_code")})
+
+    save_requests(requests)
+    print(json.dumps({"count": len(results), "results": results}, ensure_ascii=True))
+
+
+def cmd_ai_tools(_: argparse.Namespace) -> None:
+    print(json.dumps(list_ai_tools(), ensure_ascii=True))
 
 
 def cmd_run(args: argparse.Namespace) -> None:
@@ -392,6 +467,52 @@ class AgentAPIHandler(BaseHTTPRequestHandler):
                 self._json(200, {"task_id": task_id, "project": project})
                 return
 
+            if self.path == "/projects/execute-task":
+                project_id = payload.get("project_id")
+                objective = payload.get("objective")
+                acceptance = payload.get("acceptance")
+                constraints = payload.get("constraints", "")
+                ai_tool = payload.get("ai_tool", "generic")
+                ai_command = payload.get("ai_command")
+                if not project_id or not objective or not acceptance:
+                    self._json(400, {"error": "project_id, objective, acceptance required"})
+                    return
+                project = get_project(project_id)
+                if not project:
+                    self._json(404, {"error": "project not found"})
+                    return
+                if not project.get("enabled", True):
+                    self._json(403, {"error": "project disabled"})
+                    return
+                plan = build_execution_plan(
+                    project=project,
+                    objective=objective,
+                    acceptance=acceptance,
+                    constraints=constraints,
+                    tool_name=ai_tool,
+                    custom_ai_command=ai_command,
+                )
+                policy = load_policy(Path(payload.get("policy", str(DEFAULT_POLICY))))
+                created = []
+                for step in plan["steps"]:
+                    rec = create_request(
+                        policy,
+                        step["command"],
+                        Path(project["repo_path"]).resolve(),
+                        reason=step["reason"],
+                    )
+                    created.append(
+                        {
+                            "step": step["step"],
+                            "request_id": rec["request_id"],
+                            "status": rec["status"],
+                            "decision": rec["decision"],
+                            "command": step["command"],
+                        }
+                    )
+                self._json(200, {"plan": plan, "requests": created})
+                return
+
             self._json(404, {"error": "not_found"})
         except Exception as exc:
             self._json(500, {"error": str(exc)})
@@ -451,6 +572,27 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_pgs = sub.add_parser("project-goals-status")
     p_pgs.set_defaults(func=cmd_project_goals_status)
+
+    p_pet = sub.add_parser("project-execute-task")
+    p_pet.add_argument("--project-id", required=True)
+    p_pet.add_argument("--objective", required=True)
+    p_pet.add_argument("--acceptance", required=True)
+    p_pet.add_argument("--constraints", default="")
+    p_pet.add_argument("--ai-tool", default="generic")
+    p_pet.add_argument("--ai-command", default=None)
+    p_pet.add_argument("--policy", default=str(DEFAULT_POLICY))
+    p_pet.set_defaults(func=cmd_project_execute_task)
+
+    p_pac = sub.add_parser("project-approve-chain")
+    p_pac.add_argument("--request-ids", required=True, help="Comma-separated request IDs")
+    p_pac.add_argument("--approved-by", required=True)
+    p_pac.add_argument("--reason", required=True)
+    p_pac.add_argument("--execute", action="store_true")
+    p_pac.add_argument("--policy", default=str(DEFAULT_POLICY))
+    p_pac.set_defaults(func=cmd_project_approve_chain)
+
+    p_tools = sub.add_parser("ai-tools")
+    p_tools.set_defaults(func=cmd_ai_tools)
 
     p_run = sub.add_parser("run")
     p_run.add_argument("--inbox", default=None)

@@ -199,6 +199,24 @@ Project-scoped command request:
   --project-id openclaw \
   --task-type weekly_report \
   --objective "Summarize this week's openclaw progress and blockers"
+
+# execute a real coding task pipeline (AI coding + verification commands)
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh project-execute-task \
+  --project-id digital-ecology \
+  --objective "实现用户列表分页与筛选功能" \
+  --acceptance "列表支持分页/筛选；接口有测试；npm test 通过" \
+  --ai-tool generic \
+  --ai-command "<your_ai_cli_command_here>"
+
+# approve and run a chain of generated requests
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh project-approve-chain \
+  --request-ids req-aaa,req-bbb,req-ccc \
+  --approved-by zqs \
+  --reason "approved execution chain" \
+  --execute
+
+# list configured AI coding tools/templates
+/Users/zqs/Downloads/project/myself/ai-chief/agent.sh ai-tools
 ```
 
 Skill/GitHub capability search policy:
@@ -226,6 +244,7 @@ Endpoints:
 - `POST /projects/discover` body: `{\"root\":\"/Users/zqs/Downloads/project\",\"max_depth\":2}`
 - `POST /projects/command-request` body: `{\"project_id\":\"openclaw\",\"command\":\"git status\",\"reason\":\"daily check\"}`
 - `POST /projects/add-task` body: `{\"project_id\":\"openclaw\",\"task_type\":\"weekly_report\",\"objective\":\"...\"}`
+- `POST /projects/execute-task` body: `{\"project_id\":\"digital-ecology\",\"objective\":\"...\",\"acceptance\":\"...\",\"ai_tool\":\"generic\",\"ai_command\":\"...\"}`
 
 ## Self-growth loop
 

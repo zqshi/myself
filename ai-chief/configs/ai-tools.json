@@ -1,0 +1,29 @@
+{
+  "default_tool": "codex",
+  "tools": {
+    "generic": {
+      "description": "Provide full command manually",
+      "template": "{custom_command}"
+    },
+    "codex": {
+      "description": "Codex CLI template (recommended)",
+      "template": "codex exec --cwd {repo_path} --prompt {prompt}"
+    },
+    "claude": {
+      "description": "Claude CLI template",
+      "template": "claude -p {prompt}"
+    },
+    "aider": {
+      "description": "Aider CLI template",
+      "template": "aider --yes --message {prompt}"
+    },
+    "gemini": {
+      "description": "Gemini CLI template",
+      "template": "gemini --prompt {prompt}"
+    },
+    "openai": {
+      "description": "OpenAI CLI template",
+      "template": "openai tools run --cwd {repo_path} --prompt {prompt}"
+    }
+  }
+}
