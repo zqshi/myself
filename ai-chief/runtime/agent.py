@@ -15,6 +15,7 @@ from project_registry import discover_projects, get_project, load_registry, save
 
 ROOT = Path(__file__).resolve().parent.parent
 DAILY_RUN = ROOT / "scripts" / "daily-run.sh"
+PROJECT_GOALS_PATH = ROOT / "configs" / "project-goals.json"
 
 
 def run_cmd(cmd: list[str]) -> subprocess.CompletedProcess:
@@ -101,6 +102,28 @@ def cmd_project_add_task(args: argparse.Namespace) -> None:
         deadline=args.deadline,
     )
     print(json.dumps({"task_id": task_id, "project": project}, ensure_ascii=True))
+
+
+def cmd_project_goals_status(_: argparse.Namespace) -> None:
+    if not PROJECT_GOALS_PATH.exists():
+        print(json.dumps({"error": f"missing: {PROJECT_GOALS_PATH}"}, ensure_ascii=True))
+        return
+    obj = json.loads(PROJECT_GOALS_PATH.read_text(encoding="utf-8"))
+    projects = obj.get("projects", [])
+    confirmed = [x for x in projects if x.get("goal_status") == "confirmed"]
+    pending = [x for x in projects if x.get("goal_status") != "confirmed"]
+    print(
+        json.dumps(
+            {
+                "total": len(projects),
+                "confirmed": len(confirmed),
+                "needs_confirmation": len(pending),
+                "pending_projects": pending,
+                "file": str(PROJECT_GOALS_PATH),
+            },
+            ensure_ascii=True,
+        )
+    )
 
 
 def cmd_run(args: argparse.Namespace) -> None:
@@ -415,6 +438,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_pat.add_argument("--constraints", default="")
     p_pat.add_argument("--deadline", default=None)
     p_pat.set_defaults(func=cmd_project_add_task)
+
+    p_pgs = sub.add_parser("project-goals-status")
+    p_pgs.set_defaults(func=cmd_project_goals_status)
 
     p_run = sub.add_parser("run")
     p_run.add_argument("--inbox", default=None)

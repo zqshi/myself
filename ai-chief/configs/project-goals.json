@@ -1,0 +1,309 @@
+{
+  "count": 30,
+  "projects": [
+    {
+      "name": "After-sales",
+      "repo_path": "/Users/zqs/Downloads/project/After-sales",
+      "tech": [
+        "node"
+      ],
+      "goal": "智能售后工作台",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "Agent",
+      "repo_path": "/Users/zqs/Downloads/project/Agent",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "agent-admin",
+      "repo_path": "/Users/zqs/Downloads/project/agent-admin",
+      "tech": [
+        "node"
+      ],
+      "goal": "KingSoft - 数字员工智能管理平台",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "AgentOS",
+      "repo_path": "/Users/zqs/Downloads/project/AgentOS",
+      "tech": [],
+      "goal": "AgentOS 企业智能中枢产品矩阵",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "agentscope",
+      "repo_path": "/Users/zqs/Downloads/project/agentscope/agentscope",
+      "tech": [
+        "python"
+      ],
+      "goal": "[**中文主页**](https://github.com/agentscope-ai/agentscope/blob/main/README_zh.md) | [**Tutorial**](https://doc.agentscope.io/) | [**Roadmap**](https://github.com/agentscope-ai/agentscope/blob/main/docs/roadmap.md) | [**FAQ*",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "agentscope",
+      "repo_path": "/Users/zqs/Downloads/project/learn/agentscope",
+      "tech": [
+        "python"
+      ],
+      "goal": "[**中文主页**](https://github.com/agentscope-ai/agentscope/blob/main/README_zh.md) | [**Tutorial**](https://doc.agentscope.io/) | [**Roadmap**](https://github.com/agentscope-ai/agentscope/blob/main/docs/roadmap.md) | [**FAQ*",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "ai-kit",
+      "repo_path": "/Users/zqs/Downloads/project/ai-kit",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "BuildWise",
+      "repo_path": "/Users/zqs/Downloads/project/BuildWise",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "claude-agent-sdk-python",
+      "repo_path": "/Users/zqs/Downloads/project/anthropics/claude-agent-sdk-python",
+      "tech": [
+        "python"
+      ],
+      "goal": "Claude Agent SDK for Python",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "coze-studio扣子",
+      "repo_path": "/Users/zqs/Downloads/project/coze-studio扣子",
+      "tech": [],
+      "goal": "![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/943f576df3424fa98580c2ad18946719~tplv-goo7wpa0wc-image.image)",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "DeepResearch",
+      "repo_path": "/Users/zqs/Downloads/project/ThinkCraft/DeepResearch",
+      "tech": [
+        "python"
+      ],
+      "goal": "Introduction",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "element-web",
+      "repo_path": "/Users/zqs/Downloads/project/matrix/element-web",
+      "tech": [
+        "node"
+      ],
+      "goal": "Element",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "HRssc",
+      "repo_path": "/Users/zqs/Downloads/project/HRssc",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "LLM-KG",
+      "repo_path": "/Users/zqs/Downloads/project/LLM-KG",
+      "tech": [
+        "node"
+      ],
+      "goal": "企业知识聚合平台 (LLM-KG)",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "matrix",
+      "repo_path": "/Users/zqs/Downloads/project/matrix",
+      "tech": [],
+      "goal": "Matrix Chat Server & Element Web Client",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "memos自托管知识库",
+      "repo_path": "/Users/zqs/Downloads/project/memos自托管知识库",
+      "tech": [
+        "go"
+      ],
+      "goal": "Memos",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "myself",
+      "repo_path": "/Users/zqs/Downloads/project/myself",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "nuwax",
+      "repo_path": "/Users/zqs/Downloads/project/nuwax",
+      "tech": [
+        "node"
+      ],
+      "goal": "Nuwax",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "openclaw",
+      "repo_path": "/Users/zqs/Downloads/project/openclaw",
+      "tech": [
+        "node"
+      ],
+      "goal": "🦞 OpenClaw — Personal AI Assistant",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "product-cocreate-platform",
+      "repo_path": "/Users/zqs/Downloads/project/test/product-cocreate-platform",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "ragflow",
+      "repo_path": "/Users/zqs/Downloads/project/ragflow",
+      "tech": [
+        "python"
+      ],
+      "goal": "<a href=\"https://demo.ragflow.io/\">",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "skill",
+      "repo_path": "/Users/zqs/Downloads/project/skill",
+      "tech": [],
+      "goal": "企业知识管理系统 - Claude Skills 集合",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "skills",
+      "repo_path": "/Users/zqs/Downloads/project/skills",
+      "tech": [],
+      "goal": "Skills",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "skills",
+      "repo_path": "/Users/zqs/Downloads/project/skill/skills",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "template",
+      "repo_path": "/Users/zqs/Downloads/project/HRssc/template",
+      "tech": [],
+      "goal": "",
+      "goal_status": "needs_confirmation",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "ThinkCraft",
+      "repo_path": "/Users/zqs/Downloads/project/ThinkCraft",
+      "tech": [
+        "node"
+      ],
+      "goal": "ThinkCraft",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "Thinking-Claude",
+      "repo_path": "/Users/zqs/Downloads/project/Thinking-Claude",
+      "tech": [
+        "node"
+      ],
+      "goal": "Thinking Claude",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "UI-TARS-desktop字节",
+      "repo_path": "/Users/zqs/Downloads/project/UI-TARS-desktop字节",
+      "tech": [
+        "node"
+      ],
+      "goal": "A GUI Agent application based on UI-TARS(Vision-Lanuage Model) that allows you to control your computer using natural language.",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "WeKnora",
+      "repo_path": "/Users/zqs/Downloads/project/WeKnora",
+      "tech": [
+        "go"
+      ],
+      "goal": "💡 WeKnora - LLM-Powered Document Understanding & Retrieval Framework",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    },
+    {
+      "name": "【废】Agent",
+      "repo_path": "/Users/zqs/Downloads/project/【废】Agent",
+      "tech": [
+        "python"
+      ],
+      "goal": "KBAssistant - 知识库助手 Agent (v2.0)",
+      "goal_status": "confirmed",
+      "execution_scope": "all_execution_tasks",
+      "notes": ""
+    }
+  ]
+}
